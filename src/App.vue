@@ -6,7 +6,7 @@
     <button v-on:click="addTodo">Add todo</button>
     <ul>
       <li v-for="item in todos" v-bind:class="{'completed' : item.done}">
-        {{ item.text }}
+        {{ item.title }}
         <input type="checkbox" v-on:change="completeTodo" v-model="item.done"/>
       </li>
     </ul>
@@ -16,17 +16,16 @@
 
 <script>
 var id = 3
+import axios from 'axios';
+const JSONAPIDeserializer = require('jsonapi-serializer').Deserializer;
+
 export default {
   name: 'app',
   data () {
     return {
       msg: 'Todo App Using Vue.js',
       newTodo: '',
-      todos: [
-        {id:1,text: 'learn vue',done:false},
-        {id: 2,text: 'make a todo app',done:false},
-        {id:3, text:'test this app',done:false}
-      ]
+      todos: []
     }
   },
   methods: {
@@ -47,7 +46,19 @@ export default {
     },
     removeTodos: function () {
       this.todos = []
+    },
+    getTodos: function () {
+      var todosList = []
+      axios.get('http://localhost:3232/api/todos').then( (response) => {
+        new JSONAPIDeserializer().deserialize(response.data, function (err,data) {
+          data.map(i => todosList.push(i))
+        })
+      })
+      this.todos = todosList
     }
+  },
+  beforeMount(){
+    this.getTodos()
   }
 }
 </script>
